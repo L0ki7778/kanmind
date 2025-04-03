@@ -43,9 +43,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'corsheaders',  # add corsheaders to installed apps
     'boards',
-    'auth',
-    'tasks',
-    'rest_framework.authtoken'
+    'authentication',
+    'tasks'
 ]
 
 MIDDLEWARE = [
