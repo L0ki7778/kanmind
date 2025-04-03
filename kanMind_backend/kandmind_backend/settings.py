@@ -25,7 +25,9 @@ SECRET_KEY = 'django-insecure-w4fldl-g)_kj2df#-ds5vjp*ux(&h6)23g5+*$255k&#+x!h-z
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+
+# add allowed hosts. The port can be omitted
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 
 # Application definition
@@ -36,17 +38,26 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles',
+    'django.contrib.staticfiles', # add any app you create in django to installed apps
+    'rest_framework', # add rest framework to installed apps
+    'corsheaders', # add corsheaders to installed apps
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware', # add corsheaders middleware if you user Django RSF
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+CORS_ALLOWED_ORIGINS = [ 
+    # you need to add allowed origins if you use django cors headers. 
+    # the port is mandatory
+    "http://localhost:4200", "http://127.0.0.1:4200"
 ]
 
 ROOT_URLCONF = 'kandmind_backend.urls'
