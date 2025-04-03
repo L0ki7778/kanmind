@@ -38,15 +38,20 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'django.contrib.staticfiles', # add any app you create in django to installed apps
-    'rest_framework', # add rest framework to installed apps
-    'corsheaders', # add corsheaders to installed apps
+    'django.contrib.staticfiles',  # add any app you create in django to installed apps
+    'rest_framework',  # add rest framework to installed apps
+    'rest_framework.authtoken',
+    'corsheaders',  # add corsheaders to installed apps
+    'boards',
+    'auth',
+    'tasks'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware', # add corsheaders middleware if you user Django RSF
+    # add corsheaders middleware if you user Django RSF
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -54,8 +59,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-CORS_ALLOWED_ORIGINS = [ 
-    # you need to add allowed origins if you use django cors headers. 
+CORS_ALLOWED_ORIGINS = [
+    # you need to add allowed origins if you use django cors headers.
     # the port is mandatory
     "http://localhost:4200", "http://127.0.0.1:4200"
 ]
