@@ -1,5 +1,6 @@
 from django.urls import path
+from .views import BoardListCreateView
 
-# urlpatterns = [
-#     path('')
-# ]
+urlpatterns = [
+    path('', BoardListCreateView.as_view())
+]
