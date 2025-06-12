@@ -1,5 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
+from typing import Any
 
 
 class SimpleUserSerializer(serializers.ModelSerializer):
@@ -14,27 +16,61 @@ class SimpleUserSerializer(serializers.ModelSerializer):
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
-
+    fullname = serializers.CharField(write_only = True)
     repeated_password = serializers.CharField(write_only = True)
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password', 'repeated_password')
+        fields = ('fullname', 'email', 'password', 'repeated_password')
         extra_kwargs = {'password': {'write_only': True}}
-
-    def save(self):
-        password = self.validated_data["password"]
-        repeated_password = self.validated_data["repeated_password"]
-
-        if password != repeated_password:
-            raise serializers.ValidationError({"error":"Fehler noch befüllen"})
-
-        account = User(email = self.validated_data["email"], username = self.validated_data["username"])
-        account.set_password(password)
-        account.save()
-        return account
-
+        
+    def validate(self, data:dict[str,Any])->dict[str,Any]:
+        if data['password']!=data['repeated_password']:
+            raise serializers.ValidationError({"password":"Passwörter stimmen nicht überein"})
+        return data
+    
     def validate_email(self, value):
         if User.objects.filter(email = value).exists():
             raise serializers.ValidationError({"error":"Diese Email-Adresse ist bereits vergeben"})
         return value
+    
+    
+    def create(self, validated_data:dict[str,Any]):
+        fullname = validated_data.pop('fullname')
+        password = validated_data.pop('password')
+        validated_data.pop('repeated_password')
+        
+        name_parts = fullname.strip().split()
+        
+        username = name_parts[0]
+        last_name = " ".join(name_parts[1:]) if len(name_parts)>1 else ""
+        
+        user = User(
+            username = username,
+            last_name = last_name,
+            email = validated_data.get("email")
+        )
+        user.set_password(password)
+        user.save()
+        return user
+    
+
+class EmailAuthTokenSerializher(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField()
+    
+    def validate(self, payload):
+        p_email = payload.get('email')
+        p_password = payload.get('password')
+        
+        try:
+            user = User.objects.get(email = p_email)
+        except User.DoesNotExist:
+            raise serializers.ValidationError("Email oder Passwort ist ungültig")
+        
+        user = authenticate(username=user.username, password = p_password)
+        if not user:
+            raise serializers.ValidationError("Email oder Passwort ist ungültig.")
+        
+        payload['user'] = user
+        return payload

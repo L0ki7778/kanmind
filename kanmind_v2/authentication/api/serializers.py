@@ -7,8 +7,8 @@ class PkToUserInstaceSerializer(serializers.Serializer):
     fullname = serializers.SerializerMethodField()
     id = serializers.IntegerField()
     email = serializers.EmailField()
-    
-    def get_fullname(self,instance):
+
+    def get_fullname(self, instance):
         return f'{instance.username} {instance.last_name}'.strip()
 
 
@@ -26,7 +26,8 @@ class RegistrationSerializer(serializers.ModelSerializer):
         repeated_pw = self.validated_data['repeated_password']
 
         if password != repeated_pw:
-            return serializers.ValidationError({"error: ": "Die Passwörter stimmen nicht überein"})
+            raise serializers.ValidationError(
+                {"error: ": "Die Passwörter stimmen nicht überein"})
 
         names = self.validated_data['fullname'].strip().split()
         first_name = names[0]

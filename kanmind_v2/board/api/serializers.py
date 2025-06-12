@@ -5,14 +5,14 @@ from ..models import Board
 
 class BoardCreateSerializer(serializers.ModelSerializer):
     members = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(), many=True)
+        queryset=User.objects.all(), many=True, write_only=True)
     member_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Board
-        fields = ['title', 'members', 'member_count', 'ticket_count',
+        fields = ['id','title', 'members', 'member_count', 'ticket_count',
                   'tasks_to_do_count', 'tasks_high_prio_count','owner_id']
-        read_only_fields = ['member_count', 'ticket_count', 'tasks_to_do_count', 'tasks_high_prio_count','owner_id']
+        read_only_fields = ['id','member_count', 'ticket_count', 'tasks_to_do_count', 'tasks_high_prio_count','owner_id']
 
     def get_member_count(self, instance):
         return instance.members.count()

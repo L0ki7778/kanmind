@@ -1,5 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
+from django.contrib.auth.models import User
 from .serializers import RegistrationSerializer, EmailLoginSerializer
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
@@ -34,13 +35,13 @@ class CustomLoginView(ObtainAuthToken):
         serializer  = self.serializer_class(data = request.data)
         
         if serializer.is_valid():
-            account = serializer.validated_data['user']
+            account:User = serializer.validated_data['user']
             token = Token.objects.get(user = account)
             data = {
                 'token':token.key,
                 'fullname':f'{account.first_name} {account.last_name}',
                 'email':account.email,
-                'user_id':account.id
+                'user_id':account.pk
             }
         else:
             data= serializer.errors
