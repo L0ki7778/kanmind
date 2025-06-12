@@ -60,8 +60,7 @@ class EmailAuthTokenSerializher(serializers.Serializer):
     password = serializers.CharField()
     
     def validate(self, payload):
-        p_email = payload.get('email')
-        p_password = payload.get('password')
+        p_email,p_password = payload.get('email'),payload.get('password')
         
         try:
             user = User.objects.get(email = p_email)
