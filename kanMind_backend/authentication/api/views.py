@@ -1,7 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
+from rest_framework import status
 from django.contrib.auth.models import User
-from .serializers import RegistrationSerializer, EmailAuthTokenSerializher
+from .serializers import RegistrationSerializer, EmailAuthTokenSerializher, SimpleUserSerializer
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.response import Response
@@ -46,4 +47,20 @@ class CustomLoginView(ObtainAuthToken):
             data = serializer.errors
         return Response(data)
         
-    
+
+class EmailCheckView(APIView):
+    def get(self, request):
+        
+        email = request.query_params.get('email')
+        print(email)
+        if not email:
+            return Response({'error': 'Missing email'}, status=400)
+        
+        try:
+            user = User.objects.get(email=email)
+            user_data = SimpleUserSerializer(user).data
+            return Response(user_data)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        
