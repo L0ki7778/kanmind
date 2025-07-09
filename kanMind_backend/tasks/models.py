@@ -30,3 +30,10 @@ class Task(models.Model):
     reviewer = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL, related_name='assigned_reviews')
     due_date = models.DateField(editable=True, default=one_week_from_now)
     comments_count = models.IntegerField(default=0)
+    
+    
+class Comment(models.Model):
+    task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='comments')
+    created_at = models.DateTimeField(auto_now_add=True)
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField(max_length=500)
