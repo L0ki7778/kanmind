@@ -11,7 +11,7 @@ class SimpleUserSerializer(serializers.ModelSerializer):
         model = User
         fields = ["id","email","full_name"]
 
-    def get_full_name(self, obj):
+    def get_full_name(self, obj:User)->str:
         return f'{obj.username} {obj.last_name}'.strip()
 
 
@@ -30,13 +30,13 @@ class RegistrationSerializer(serializers.ModelSerializer):
                 {"password": "Passwörter stimmen nicht überein"})
         return data
 
-    def validate_email(self, value):
+    def validate_email(self, value:str)->str:
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError(
                 {"error": "Diese Email-Adresse ist bereits vergeben"})
         return value
 
-    def create(self, validated_data: dict[str, Any]):
+    def create(self, validated_data: dict[str, Any])->User:
         fullname = validated_data.pop('fullname')
         password = validated_data.pop('password')
         validated_data.pop('repeated_password')
@@ -60,7 +60,7 @@ class EmailAuthTokenSerializher(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
 
-    def validate(self, payload):
+    def validate(self, payload:dict[str,Any]):
         p_email, p_password = payload.get('email'), payload.get('password')
 
         try:
