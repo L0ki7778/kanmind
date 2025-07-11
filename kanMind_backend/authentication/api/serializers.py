@@ -5,13 +5,13 @@ from typing import Any
 
 
 class SimpleUserSerializer(serializers.ModelSerializer):
-    full_name = serializers.SerializerMethodField()
+    fullname = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ["id","email","full_name"]
+        fields = ["id","email","fullname"]
 
-    def get_full_name(self, obj:User)->str:
+    def get_fullname(self, obj:User)->str:
         return f'{obj.username} {obj.last_name}'.strip()
 
 
