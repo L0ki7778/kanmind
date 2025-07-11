@@ -27,9 +27,19 @@ class TaskListReviewerView(ListAPIView):
         return Task.objects.filter(reviewer=self.request.user)
 
 
-class TaskUpdateDeleteView(GenericAPIView, DestroyModelMixin):
+class TaskUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
-    lookup_url_kwarg:str = 'comment_id'
+    lookup_url_kwarg = 'task_id'
+    serializer_class = TaskListCreateSerializer
+    
+    
+    def delete(self,request, *args, **kwargs):
+        return self.destroy(request, *args, **kwargs)
+
+
+class TaskCommentUpdateDeleteView(RetrieveUpdateDestroyAPIView):
+    queryset = Task.objects.all()
+    lookup_url_kwarg = 'comment_id'
 
     def get_object(self) -> Comment:
         task_id : int = int(self.kwargs.get('task_id'))
