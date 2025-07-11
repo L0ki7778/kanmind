@@ -1,6 +1,8 @@
 from rest_framework import serializers
 from ..models import Board
+from tasks.api.seriralizers import TaskListCreateSerializer
 from django.contrib.auth.models import User
+from authentication.api.serializers import SimpleUserSerializer
 
 class BoardSerializer(serializers.ModelSerializer):
     member_count = serializers.SerializerMethodField()
@@ -29,8 +31,21 @@ class BoardSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         owner = request.user if request else None
 
-        board = Board.objects.create(owner_id=owner, **validated_data)
+        board = Board.objects.create(owner=owner, **validated_data)
 
         board.members.set(members)
         return board
+    
+class SingleBoardSerializer(BoardSerializer):
+    members = SimpleUserSerializer( many=True)
+    tasks = TaskListCreateSerializer(many=True, read_only=True)
+    class Meta:
+        model = Board
+        fields = [
+            'id',
+            'title',
+            'owner_id',
+            'members',
+            'tasks'
+        ]
 
