@@ -18,12 +18,13 @@ class TaskListCreateSerializer(serializers.ModelSerializer):
         queryset=User.objects.all(), source='assignee', write_only=True, required=False)
     reviewer_id = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(), source='reviewer', write_only=True, required=False)
+    creator = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
         model = Task
         fields = ['id', 'title', 'description', 'status', 'priority',
                   'comments_count', 'board', 'assignee', 'reviewer', 'assignee_id',
-                  'reviewer_id', 'due_date']
+                  'reviewer_id', 'due_date', 'creator']
 
 
 class TaskCommentsSerializer(serializers.ModelSerializer):

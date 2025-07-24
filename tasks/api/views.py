@@ -1,15 +1,17 @@
 from rest_framework.generics import ListCreateAPIView, RetrieveUpdateDestroyAPIView, GenericAPIView, ListAPIView
-from rest_framework.mixins import UpdateModelMixin, DestroyModelMixin
-from rest_framework.exceptions import NotFound
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
-from .seriralizers import TaskListCreateSerializer,CommentListCreateSerializer
-from ..models import Task,Comment
+from .seriralizers import TaskListCreateSerializer, CommentListCreateSerializer
+from ..models import Task, Comment
+from rest_framework.permissions import IsAuthenticated
+from .permissiony import IsPartOfBoard
 
 
 class TaskListCreateView(ListCreateAPIView):
+    print("permission gets checked next")
     queryset = Task.objects.all()
     serializer_class = TaskListCreateSerializer
+    permission_classes = [IsPartOfBoard and IsAuthenticated]
 
 
 class TaskListAssignedView(ListAPIView):
@@ -31,9 +33,8 @@ class TaskUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
     lookup_url_kwarg = 'task_id'
     serializer_class = TaskListCreateSerializer
-    
-    
-    def delete(self,request, *args, **kwargs):
+
+    def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
 
 
@@ -42,20 +43,19 @@ class TaskCommentUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     lookup_url_kwarg = 'comment_id'
 
     def get_object(self) -> Comment:
-        task_id : int = int(self.kwargs.get('task_id'))
-        comment_id : int = int(self.kwargs.get('comment_id'))
-        return Comment.objects.get(pk = comment_id, task__id = task_id)
-    
-    def delete(self,request, *args, **kwargs):
+        task_id: int = int(self.kwargs.get('task_id'))
+        comment_id: int = int(self.kwargs.get('comment_id'))
+        return Comment.objects.get(pk=comment_id, task__id=task_id)
+
+    def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
 
 
 class TaskCommentsListCreateView(ListCreateAPIView):
     queryset = Comment.objects.all()
     serializer_class = CommentListCreateSerializer
-    
-    def perform_create(self, serializer:CommentListCreateSerializer):
+
+    def perform_create(self, serializer: CommentListCreateSerializer):
         task_id = self.kwargs.get("task_id")
-        task = get_object_or_404(Task, pk = task_id)
+        task = get_object_or_404(Task, pk=task_id)
         serializer.save(author=self.request.user, task=task)
-        

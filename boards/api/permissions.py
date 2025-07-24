@@ -7,21 +7,19 @@ from rest_framework import status
 
 class IsOwnerOrAuthenticated(BasePermission):
 
-    def has_permission(self, request, view)->bool:
-        user:User = request.user
-        method : str= request.method
-        if method in SAFE_METHODS:
-            return True
-        return user and user.is_authenticated
+    # def has_permission(self, request, view)->bool:
+    #     user:User = request.user
+    #     method : str= request.method
+    #     if method in SAFE_METHODS:
+    #         return True
+    #     return user and user.is_authenticated
     
     def has_object_permission(self, request, view, obj)->bool:
         user: User = request.user
         board : Board = obj
         method : str= request.method
         
-        if method in SAFE_METHODS:
-            return True
-        elif method == "DELETE":
+        if method == "DELETE":
             return bool(user and user == board.owner)
         return bool(user == board.owner or user in board.members.all())
         

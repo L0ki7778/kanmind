@@ -4,9 +4,26 @@ from tasks.api.seriralizers import TaskListCreateSerializer
 from django.contrib.auth.models import User
 from authentication.api.serializers import SimpleUserSerializer
 
+class MembersField(serializers.Field):
+    
+    def to_representation(self, value:User):
+        return SimpleUserSerializer(value.all(), many=True).data
+    
+    def to_internal_value(self, data):
+        users=[]
+        for pk in data:
+            try:
+                
+                user = User.objects.get(pk=pk)
+                users.append(user)
+            except User.DoesNotExist:
+                raise serializers.ValidationError(f"Ein oder meherere User nicht vorhanden")
+        return users
+    
+
 class BoardSerializer(serializers.ModelSerializer):
     member_count = serializers.SerializerMethodField()
-    members = serializers.PrimaryKeyRelatedField(queryset=User.objects.all(), many=True, write_only=True)
+    members = MembersField()
     owner_id = serializers.PrimaryKeyRelatedField(read_only=True)
 
 
@@ -37,8 +54,7 @@ class BoardSerializer(serializers.ModelSerializer):
         return board
     
 class SingleBoardSerializer(BoardSerializer):
-    members = SimpleUserSerializer( many=True)
-    tasks = TaskListCreateSerializer(many=True, read_only=True)
+    tasks = serializers.SerializerMethodField()
     class Meta:
         model = Board
         fields = [
@@ -48,4 +64,10 @@ class SingleBoardSerializer(BoardSerializer):
             'members',
             'tasks'
         ]
+        
+    def get_tasks(self, instance):
+        serializer = TaskListCreateSerializer(instance.tasks.all(), many=True)
+        if serializer.is_valid():
+            return serializer.data
+        # return TaskListCreateSerializer(instance.tasks.all(), many=True).data
 
