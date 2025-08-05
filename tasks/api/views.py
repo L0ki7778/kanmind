@@ -4,14 +4,13 @@ from django.shortcuts import get_object_or_404
 from .seriralizers import TaskListCreateSerializer, CommentListCreateSerializer
 from ..models import Task, Comment
 from rest_framework.permissions import IsAuthenticated
-from .permissiony import IsPartOfBoard
+from .permissions import IsPartOfBoard,IsCommentCreator
 
 
 class TaskListCreateView(ListCreateAPIView):
-    print("permission gets checked next")
     queryset = Task.objects.all()
     serializer_class = TaskListCreateSerializer
-    permission_classes = [IsPartOfBoard and IsAuthenticated]
+    permission_classes = [IsPartOfBoard , IsAuthenticated]
 
 
 class TaskListAssignedView(ListAPIView):
@@ -33,6 +32,7 @@ class TaskUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
     lookup_url_kwarg = 'task_id'
     serializer_class = TaskListCreateSerializer
+    permission_classes = [IsPartOfBoard]
 
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
@@ -41,6 +41,7 @@ class TaskUpdateDeleteView(RetrieveUpdateDestroyAPIView):
 class TaskCommentUpdateDeleteView(RetrieveUpdateDestroyAPIView):
     queryset = Task.objects.all()
     lookup_url_kwarg = 'comment_id'
+    permission_classes = [IsCommentCreator]
 
     def get_object(self) -> Comment:
         task_id: int = int(self.kwargs.get('task_id'))
@@ -52,10 +53,13 @@ class TaskCommentUpdateDeleteView(RetrieveUpdateDestroyAPIView):
 
 
 class TaskCommentsListCreateView(ListCreateAPIView):
-    queryset = Comment.objects.all()
     serializer_class = CommentListCreateSerializer
+    permission_classes = [IsPartOfBoard]
 
     def perform_create(self, serializer: CommentListCreateSerializer):
         task_id = self.kwargs.get("task_id")
         task = get_object_or_404(Task, pk=task_id)
         serializer.save(author=self.request.user, task=task)
+        
+    def get_queryset(self):
+        return Comment.objects.filter(task__id=self.kwargs.get("task_id"))

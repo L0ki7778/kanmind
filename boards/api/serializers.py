@@ -3,6 +3,7 @@ from ..models import Board
 from tasks.api.seriralizers import TaskListCreateSerializer
 from django.contrib.auth.models import User
 from authentication.api.serializers import SimpleUserSerializer
+from rest_framework.request import Request
 
 class MembersField(serializers.Field):
     
@@ -23,6 +24,9 @@ class MembersField(serializers.Field):
 
 class BoardSerializer(serializers.ModelSerializer):
     member_count = serializers.SerializerMethodField()
+    ticket_count = serializers.SerializerMethodField()
+    tasks_to_do_count = serializers.SerializerMethodField()
+    tasks_high_prio_count = serializers.SerializerMethodField()
     members = MembersField()
     owner_id = serializers.PrimaryKeyRelatedField(read_only=True)
 
@@ -42,6 +46,15 @@ class BoardSerializer(serializers.ModelSerializer):
 
     def get_member_count(self, instance):
         return instance.members.count()
+    
+    def get_ticket_count(self, instance):
+        return instance.tasks.count()
+    
+    def get_tasks_to_do_count(self, instance):
+        return instance.tasks.filter(status="to-do").count()
+    
+    def get_tasks_high_prio_count(self, instance):
+        return instance.tasks.filter(priority="high").count()
 
     def create(self, validated_data):
         members = validated_data.pop("members", [])
@@ -54,20 +67,24 @@ class BoardSerializer(serializers.ModelSerializer):
         return board
     
 class SingleBoardSerializer(BoardSerializer):
-    tasks = serializers.SerializerMethodField()
+    tasks = TaskListCreateSerializer(many=True, read_only=True)
+    
     class Meta:
         model = Board
         fields = [
             'id',
             'title',
-            'owner_id',
-            'members',
             'tasks'
         ]
         
-    def get_tasks(self, instance):
-        serializer = TaskListCreateSerializer(instance.tasks.all(), many=True)
-        if serializer.is_valid():
-            return serializer.data
-        # return TaskListCreateSerializer(instance.tasks.all(), many=True).data
-
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        request:Request = self.context.get('request')
+        
+        if request.method == "PATCH":
+            rep['owner_data']= SimpleUserSerializer(instance.owner).data
+            rep['members_data'] = SimpleUserSerializer(instance.members.all(), many=True).data
+        else:
+           rep['owner_id']=instance.owner_id 
+           rep['members'] = SimpleUserSerializer(instance.members.all(), many=True).data
+        return rep
