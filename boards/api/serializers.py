@@ -74,8 +74,10 @@ class SingleBoardSerializer(BoardSerializer):
         fields = [
             'id',
             'title',
-            'tasks'
+            'tasks',
+            'members'
         ]
+        write_only_fields = ['members']
         
     def to_representation(self, instance):
         rep = super().to_representation(instance)
@@ -84,6 +86,7 @@ class SingleBoardSerializer(BoardSerializer):
         if request.method == "PATCH":
             rep['owner_data']= SimpleUserSerializer(instance.owner).data
             rep['members_data'] = SimpleUserSerializer(instance.members.all(), many=True).data
+            rep.pop('members',None)
         else:
            rep['owner_id']=instance.owner_id 
            rep['members'] = SimpleUserSerializer(instance.members.all(), many=True).data
