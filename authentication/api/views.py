@@ -54,7 +54,7 @@ class EmailCheckView(APIView):
 
         email = request.query_params.get('email')
         if not email:
-            return Response({'error': 'Missing email'}, status=400)
+            return Response({'error': 'no valid or missing email'}, status=400)
 
         try:
             user = User.objects.get(email=email)

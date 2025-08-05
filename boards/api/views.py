@@ -38,3 +38,9 @@ class BoardSingleView(RetrieveUpdateDestroyAPIView):
     serializer_class = SingleBoardSerializer
     lookup_field = 'id'
     permission_classes = [IsOwnerOrAuthenticated]
+    
+    def get(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+        
